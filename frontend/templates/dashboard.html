@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>TranscribeFlow - Dashboard</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Outfit:wght@400;600;800;900&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+    <link href="/static/css/style.css" rel="stylesheet" />
+
+    <!-- Clerk.js -->
+    <script async crossorigin="anonymous"
+        data-clerk-publishable-key="pk_test_dXNlZnVsLWNoZWV0YWgtMzguY2xlcmsuYWNjb3VudHMuZGV2JA"
+        src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" type="text/javascript"></script>
+</head>
+
+<body
+    class="antialiased min-h-screen bg-[#050505] text-slate-300 font-sans selection:bg-[#00f2ff]/30 relative overflow-hidden">
+
+    <!-- Background Gradients -->
+    <div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+        <div
+            class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#00f2ff]/5 rounded-full blur-[120px] animate-pulse-slow">
+        </div>
+        <div
+            class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#bc13fe]/5 rounded-full blur-[120px] animate-pulse-slow delay-1000">
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="flex h-screen overflow-hidden">
+
+        <!-- SIDEBAR -->
+        <aside
+            class="w-64 glass-panel border-r border-white/5 flex flex-col justify-between p-6 z-20 transition-all duration-300 transform -translate-x-full md:translate-x-0 absolute md:relative h-full"
+            id="sidebar">
+            <div>
+                <!-- Logo -->
+                <div class="flex items-center gap-3 mb-10">
+                    <div
+                        class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.2)]">
+                        <span class="material-symbols-outlined text-white font-black text-xl">graphic_eq</span>
+                    </div>
+                    <span class="text-xl font-black tracking-tighter italic uppercase text-white">Transcribe<span
+                            class="text-[#00f2ff]">Flow</span></span>
+                </div>
+
+                <!-- Nav Links -->
+                <nav class="flex flex-col gap-2">
+                    <button onclick="showSection('home')" id="nav-home"
+                        class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold bg-[#00f2ff]/10 text-white border border-[#00f2ff]/20 transition-all">
+                        <span class="material-symbols-outlined text-[#00f2ff]">dashboard</span>
+                        Home
+                    </button>
+                    <a href="/upload-page"
+                        class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-slate-400 hover:bg-white/5 hover:text-white transition-all">
+                        <span class="material-symbols-outlined">mic</span>
+                        Studio
+                    </a>
+                    <button onclick="showSection('profile')" id="nav-profile"
+                        class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-slate-400 hover:bg-white/5 hover:text-white transition-all">
+                        <span class="material-symbols-outlined">account_circle</span>
+                        Profile
+                    </button>
+                </nav>
+            </div>
+
+            <!-- User Footer -->
+            <div>
+                <div class="p-4 rounded-xl bg-white/5 border border-white/5 mb-4 flex items-center gap-3"
+                    id="user-info-footer">
+                    <div class="w-8 h-8 rounded-full bg-slate-700 overflow-hidden" id="user-avatar"></div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-xs font-bold text-white truncate" id="user-name">Loading...</p>
+                        <p class="text-[10px] text-slate-500 truncate" id="user-email">...</p>
+                    </div>
+                </div>
+                <button onclick="logout()"
+                    class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 transition-all">
+                    <span class="material-symbols-outlined text-sm">logout</span>
+                    Sign Out
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="flex-1 relative overflow-y-auto custom-scrollbar p-6 md:p-10">
+
+            <!-- Mobile Toggle -->
+            <button onclick="toggleSidebar()"
+                class="md:hidden absolute top-6 left-6 z-50 p-2 bg-black/50 rounded-lg border border-white/10 text-white">
+                <span class="material-symbols-outlined">menu</span>
+            </button>
+
+            <!-- SECTION: HOME -->
+            <div id="section-home" class="max-w-6xl mx-auto animate-fade-in">
+
+                <!-- Welcome Header -->
+                <header class="mb-12 mt-8 md:mt-0">
+                    <h1 class="text-4xl md:text-5xl font-black text-white mb-2">Hello, <span id="welcome-name"
+                            class="text-gradient">Creator</span>.</h1>
+                    <p class="text-slate-400 text-lg">Ready to transform your audio into intelligence?</p>
+                </header>
+
+                <!-- Quick Actions Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                    <!-- New Project Card -->
+                    <a href="/upload-page"
+                        class="group glass-panel p-8 rounded-[2rem] border border-white/10 hover:border-[#00f2ff]/50 transition-all relative overflow-hidden">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-br from-[#00f2ff]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                        </div>
+                        <div
+                            class="w-14 h-14 bg-[#00f2ff] text-black rounded-2xl flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(0,242,255,0.3)] group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined text-3xl">add</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-2">New Project</h3>
+                        <p class="text-sm text-slate-400">Upload audio/video to transcribe and analyze.</p>
+                        <div
+                            class="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+                            <span class="material-symbols-outlined text-[#00f2ff]">arrow_forward</span>
+                        </div>
+                    </a>
+
+                    <!-- View History Card (Placeholder for now, links to Studio) -->
+                    <div onclick="window.location.href='/upload-page?tab=history'"
+                        class="cursor-pointer group glass-panel p-8 rounded-[2rem] border border-white/10 hover:border-[#bc13fe]/50 transition-all relative overflow-hidden">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-br from-[#bc13fe]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                        </div>
+                        <div
+                            class="w-14 h-14 bg-[#bc13fe]/20 text-[#bc13fe] rounded-2xl flex items-center justify-center mb-6 border border-[#bc13fe]/20 group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined text-3xl">history</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-2">Recent Flows</h3>
+                        <p class="text-sm text-slate-400">View your past transcriptions and insights.</p>
+                    </div>
+
+                    <!-- Connect Card (Placeholder) -->
+                    <div
+                        class="group glass-panel p-8 rounded-[2rem] border border-white/10 hover:border-white/30 transition-all relative overflow-hidden opacity-60">
+                        <div
+                            class="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center mb-6 border border-white/10">
+                            <span class="material-symbols-outlined text-3xl text-slate-400">hub</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-2">Integrations</h3>
+                        <p class="text-sm text-slate-400">Connect with Notion, Slack (Coming Soon).</p>
+                    </div>
+                </div>
+
+                <!-- Recent Activity Table (Mock Data / Initial Empty State) -->
+                <div>
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-bold text-white">Recent Activity</h2>
+                    </div>
+                    <div class="glass-panel rounded-3xl border border-white/5 overflow-hidden">
+                        <div id="recent-files-list" class="p-8 text-center">
+                            <span class="material-symbols-outlined text-4xl text-slate-600 mb-4">folder_open</span>
+                            <p class="text-slate-500">Your recent files will appear here.</p>
+                            <a href="/upload-page"
+                                class="text-[#00f2ff] text-sm font-bold mt-2 inline-block hover:underline">Go to
+                                Studio</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION: PROFILE -->
+            <div id="section-profile" class="max-w-3xl mx-auto hidden animate-fade-in">
+                <header class="mb-12 mt-8 md:mt-0">
+                    <h1 class="text-4xl md:text-5xl font-black text-white mb-2">Your Profile</h1>
+                    <p class="text-slate-400 text-lg">Manage your account settings and preferences.</p>
+                </header>
+
+                <div id="clerk-user-profile"></div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Logic -->
+    <script>
+        // Init Clerk
+        window.addEventListener("load", async function () {
+            await Clerk.load();
+
+            if (!Clerk.user) {
+                window.location.href = "/"; // Redirect to login if not authenticated
+            } else {
+                // Populate User Info
+                document.getElementById('welcome-name').innerText = Clerk.user.firstName;
+                document.getElementById('user-name').innerText = Clerk.user.fullName;
+                document.getElementById('user-email').innerText = Clerk.user.primaryEmailAddress.emailAddress;
+
+                const avatar = document.getElementById('user-avatar');
+                const img = document.createElement('img');
+                img.src = Clerk.user.imageUrl;
+                img.className = "w-full h-full object-cover";
+                avatar.appendChild(img);
+
+                // Mount Profile Component
+                const userProfileDiv = document.getElementById('clerk-user-profile');
+                Clerk.mountUserProfile(userProfileDiv, {
+                    appearance: {
+                        baseTheme: 'dark',
+                        variables: {
+                            colorPrimary: '#00f2ff',
+                            colorBackground: '#0a0a0a',
+                            colorText: 'white'
+                        }
+                    }
+                });
+            }
+        });
+
+        function logout() {
+            Clerk.signOut({ redirectUrl: '/' });
+        }
+
+        function showSection(sectionId) {
+            // Hide all
+            document.getElementById('section-home').classList.add('hidden');
+            document.getElementById('section-profile').classList.add('hidden');
+
+            // Reset Nav Styles
+            document.getElementById('nav-home').className = "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-slate-400 hover:bg-white/5 hover:text-white transition-all";
+            document.getElementById('nav-profile').className = "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-slate-400 hover:bg-white/5 hover:text-white transition-all";
+
+            // Show Target & meaningful Nav Style
+            if (sectionId === 'home') {
+                document.getElementById('section-home').classList.remove('hidden');
+                document.getElementById('nav-home').className = "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold bg-[#00f2ff]/10 text-white border border-[#00f2ff]/20 transition-all";
+            } else if (sectionId === 'profile') {
+                document.getElementById('section-profile').classList.remove('hidden');
+                document.getElementById('nav-profile').className = "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold bg-[#00f2ff]/10 text-white border border-[#00f2ff]/20 transition-all";
+            }
+        }
+
+        function toggleSidebar() {
+            const sb = document.getElementById('sidebar');
+            sb.classList.toggle('-translate-x-full');
+        }
+    </script>
+</body>
+
+</html>

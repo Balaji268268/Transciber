@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>TranscribeFlow Studio Workspace</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Outfit:wght@400;600;800;900&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="/static/css/style.css" rel="stylesheet" />
+    <script src="/static/js/upload.js" defer></script>
+
+    <!-- Clerk.js -->
+    <script async crossorigin="anonymous"
+        data-clerk-publishable-key="pk_test_dXNlZnVsLWNoZWV0YWgtMzguY2xlcmsuYWNjb3VudHMuZGV2JA"
+        src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" type="text/javascript"></script>
+
+    <style>
+        .hidden {
+            display: none !important;
+        }
+
+        /* Custom Scrollbar for Transcript */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 242, 255, 0.5);
+        }
+
+        /* Custom Audio Range */
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #00f2ff;
+            cursor: pointer;
+            margin-top: -6px;
+            box-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            /* Use padding to bridge the gap so hover isn't lost */
+            padding-top: 0.5rem;
+            width: 12rem;
+            z-index: 100;
+        }
+
+        .dropdown-menu {
+            background-color: #0a0f1e;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            padding: 0.5rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+    </style>
+</head>
+
+<body class="antialiased mesh-gradient-bg min-h-screen">
+    <nav class="fixed top-0 w-full z-50 glass-panel border-b border-white/10">
+        <div class="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
+
+            <!-- Logo -->
+            <a href="/dashboard" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                <div
+                    class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.2)]">
+                    <span class="material-symbols-outlined text-white font-black text-xl">graphic_eq</span>
+                </div>
+                <span class="text-xl font-black tracking-tighter italic uppercase text-white">Transcribe<span
+                        class="text-[#00f2ff]">Flow</span></span>
+            </a>
+
+            <!-- Right Side Actions -->
+            <div class="flex items-center gap-4">
+                <a href="/dashboard"
+                    class="flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-white transition-all">
+                    <span class="material-symbols-outlined text-sm">arrow_back</span>
+                    Back to Home
+                </a>
+                <!-- We can use the existing user-welcome/avatar div structure or just the clerk button. 
+                     Since the dashboard uses Clerk User Button, let's stick to that for consistency if possible, 
+                     OR use the custom avatar we had before. The previous code had #clerk-user-button, 
+                     but also had #user-welcome and #user-avatar below it. 
+                     Let's use the #user-welcome structure but make it clickable to go to dashboard/profile 
+                     OR just use the Clerk button. The user prompt implied "Back to Home". 
+                     I will clean it up to just use the Back button and the User Profile avatar. -->
+                <div id="user-welcome" class="hidden md:flex flex-col items-end mr-2">
+                    <span class="text-[10px] uppercase tracking-widest text-slate-400">Welcome back</span>
+                    <span id="username-display" class="text-sm font-bold text-white">Creator</span>
+                </div>
+                <div id="user-avatar" class="w-8 h-8 rounded-full bg-slate-700 border border-white/20 overflow-hidden">
+                    <!-- Avatar injected by JS -->
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-24 pb-12 px-6 max-w-[1600px] mx-auto">
+        <!-- New User Guide Modal (Hidden by default) -->
+        <div id="guide-modal"
+            class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+            <div class="glass-panel p-8 rounded-[2rem] max-w-lg w-full text-center border border-[#00f2ff]/30">
+                <div class="w-16 h-16 bg-[#00f2ff]/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <span class="material-symbols-outlined text-[#00f2ff] text-3xl">waving_hand</span>
+                </div>
+                <h2 class="text-2xl font-black uppercase mb-4">Welcome to the Studio</h2>
+                <p class="text-slate-400 mb-8">This is your command center. Upload audio, get AI-powered insights, and
+                    visualize your sound's DNA.</p>
+                <button onclick="closeGuide()"
+                    class="bg-[#00f2ff] text-black px-8 py-3 rounded-xl font-bold uppercase tracking-widest hover:scale-105 transition-all">
+                    Let's Flow
+                </button>
+            </div>
+        </div>
+
+        <!-- UPLOAD SECTION -->
+        <div id="upload-section" class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8 transition-opacity duration-500">
+            <div class="lg:col-span-12">
+                <div class="glass-panel p-10 rounded-[2.5rem] border border-dashed border-[#00f2ff]/30 flex flex-col items-center justify-center text-center relative overflow-hidden group transition-colors duration-300 min-h-[500px]"
+                    ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+                    <div class="absolute inset-0 bg-gradient-to-br from-[#00f2ff]/5 to-transparent pointer-events-none">
+                    </div>
+                    <div
+                        class="w-20 h-20 bg-[#00f2ff]/10 rounded-3xl flex items-center justify-center mb-6 neon-border-teal">
+                        <span class="material-symbols-outlined text-[#00f2ff] text-4xl">cloud_upload</span>
+                    </div>
+                    <h2 class="text-3xl font-black mb-2 uppercase tracking-tight">Drop your masterpiece</h2>
+                    <p class="text-slate-400 mb-8 max-w-md">MP3, WAV, M4A, MP4. Up to 200MB.</p>
+                    <input type="file" id="fileInput" class="hidden" onchange="handleFileSelect(event)"
+                        accept=".wav,.mp3,.mp4,.mov,.m4a">
+                    <button onclick="triggerUpload()" id="upload-btn"
+                        class="bg-[#00f2ff] text-black px-12 py-4 rounded-2xl font-black uppercase tracking-widest text-sm hover:scale-105 transition-all shadow-[0_0_30px_rgba(0,242,255,0.3)] flex items-center gap-2">
+                        Start Transcribing
+                    </button>
+                    <div id="upload-status" class="mt-4 text-[#00f2ff] font-bold hidden">Processing... this may take a
+                        moment.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HISTORY TOGGLE -->
+        <div class="mb-6 flex justify-between items-center">
+            <button onclick="toggleHistory()"
+                class="glass-panel px-6 py-3 rounded-full flex items-center gap-3 hover:bg-white/5 transition-colors border border-white/10">
+                <span class="material-symbols-outlined text-[#bc13fe]">history</span>
+                <span class="text-xs font-black uppercase tracking-widest">Recent Flows</span>
+                <span class="material-symbols-outlined text-slate-500 text-sm">expand_more</span>
+            </button>
+        </div>
+        <div id="history-container"
+            class="hidden glass-panel mb-8 p-4 rounded-2xl border border-white/10 max-h-60 overflow-y-auto custom-scrollbar">
+        </div>
+
+        <!-- DASHBOARD SECTION (Initially Hidden) -->
+        <div id="dashboard-section" class="hidden opacity-0 transition-opacity duration-1000">
+
+            <!-- 1. Top: Full Width Audio Player (Redesigned) -->
+            <div class="glass-panel p-6 rounded-[2rem] border border-[#00f2ff]/20 mb-8 relative overflow-visible">
+                <!-- Header -->
+                <div class="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
+                    <div class="flex items-center gap-4 w-full md:w-auto">
+                        <div class="w-12 h-12 bg-[#00f2ff]/10 rounded-xl flex items-center justify-center">
+                            <span class="material-symbols-outlined text-[#00f2ff]">music_note</span>
+                        </div>
+                        <div>
+                            <h3 id="filename-display"
+                                class="font-bold text-lg text-white truncate max-w-[200px] md:max-w-md">Audio File</h3>
+                            <p id="metadata-display"
+                                class="text-[10px] text-[#00f2ff] uppercase tracking-widest font-bold">Processed</p>
+                        </div>
+                    </div>
+
+                    <!-- Translate Dropdown -->
+                    <div class="relative dropdown z-50">
+                        <button
+                            class="flex items-center gap-2 bg-black/40 border border-white/10 px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest hover:border-[#00f2ff] transition-all">
+                            <span class="material-symbols-outlined text-sm">translate</span>
+                            Translate <span class="material-symbols-outlined text-xs">expand_more</span>
+                        </button>
+                        <div class="dropdown-content">
+                            <div class="dropdown-menu">
+                                <button onclick="translateContent('es')"
+                                    class="w-full text-left px-3 py-2 hover:bg-white/5 rounded-lg text-[10px] font-bold uppercase flex items-center gap-2">🇪🇸
+                                    Spanish</button>
+                                <button onclick="translateContent('fr')"
+                                    class="w-full text-left px-3 py-2 hover:bg-white/5 rounded-lg text-[10px] font-bold uppercase flex items-center gap-2">🇫🇷
+                                    French</button>
+                                <button onclick="translateContent('de')"
+                                    class="w-full text-left px-3 py-2 hover:bg-white/5 rounded-lg text-[10px] font-bold uppercase flex items-center gap-2">🇩🇪
+                                    German</button>
+                                <button onclick="translateContent('hi')"
+                                    class="w-full text-left px-3 py-2 hover:bg-white/5 rounded-lg text-[10px] font-bold uppercase flex items-center gap-2">🇮🇳
+                                    Hindi</button>
+                                <button onclick="translateContent('ja')"
+                                    class="w-full text-left px-3 py-2 hover:bg-white/5 rounded-lg text-[10px] font-bold uppercase flex items-center gap-2">🇯🇵
+                                    Japanese</button>
+                                <button onclick="translateContent('zh')"
+                                    class="w-full text-left px-3 py-2 hover:bg-white/5 rounded-lg text-[10px] font-bold uppercase flex items-center gap-2">🇨🇳
+                                    Chinese</button>
+                                <button onclick="translateContent('ru')"
+                                    class="w-full text-left px-3 py-2 hover:bg-white/5 rounded-lg text-[10px] font-bold uppercase flex items-center gap-2">🇷🇺
+                                    Russian</button>
+                                <button onclick="translateContent('it')"
+                                    class="w-full text-left px-3 py-2 hover:bg-white/5 rounded-lg text-[10px] font-bold uppercase flex items-center gap-2">🇮🇹
+                                    Italian</button>
+                                <button onclick="translateContent('pt')"
+                                    class="w-full text-left px-3 py-2 hover:bg-white/5 rounded-lg text-[10px] font-bold uppercase flex items-center gap-2">🇵🇹
+                                    Portuguese</button>
+                                <button onclick="translateContent('ar')"
+                                    class="w-full text-left px-3 py-2 hover:bg-white/5 rounded-lg text-[10px] font-bold uppercase flex items-center gap-2">🇸🇦
+                                    Arabic</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Waveform Visualizer Area -->
+                <div
+                    class="h-24 bg-black/20 rounded-xl mb-6 flex items-center justify-center relative overflow-hidden group">
+                    <!-- Simple CSS Bars Animation for Visuals -->
+                    <div class="flex gap-1 items-end justify-center h-12 w-full px-4" id="waveform-visualizer">
+                        <!-- We will inject bars via JS or have static ones -->
+                        <div class="w-1 h-4 bg-white/20 rounded-full"></div>
+                        <div class="w-1 h-8 bg-white/20 rounded-full"></div>
+                        <div class="w-1 h-6 bg-white/40 rounded-full"></div>
+                        <div class="w-1 h-10 bg-[#00f2ff] rounded-full animate-pulse"></div>
+                        <div class="w-1 h-5 bg-white/40 rounded-full"></div>
+                        <div class="w-1 h-3 bg-white/20 rounded-full"></div>
+                        <div class="w-1 h-8 bg-white/20 rounded-full"></div>
+                        <div class="w-1 h-4 bg-white/10 rounded-full"></div>
+                        <p class="absolute text-xs text-slate-500 font-mono tracking-widest">AUDIO PREVIEW</p>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="flex flex-col gap-4">
+                    <div class="w-full flex items-center gap-3">
+                        <span id="current-time" class="text-[10px] font-mono text-slate-400 w-10">0:00</span>
+                        <div class="relative w-full h-1 bg-white/10 rounded-full cursor-pointer group">
+                            <div id="progress-bar"
+                                class="absolute h-full bg-[#00f2ff] rounded-full w-0 shadow-[0_0_10px_#00f2ff]"></div>
+                            <input type="range" id="seek-slider" min="0" max="100" value="0"
+                                class="absolute w-full h-full opacity-0 cursor-pointer z-10">
+                        </div>
+                        <span id="duration-time" class="text-[10px] font-mono text-slate-400 w-10">0:00</span>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2 group relative">
+                            <span class="material-symbols-outlined text-slate-400 text-lg">volume_up</span>
+                            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="1"
+                                class="w-20 accent-[#00f2ff] h-1 bg-white/10 rounded-lg appearance-none cursor-pointer">
+                        </div>
+
+                        <div class="flex items-center gap-6">
+                            <button onclick="skip(-10)"
+                                class="text-slate-500 hover:text-white transition-colors relative" title="-10s">
+                                <span class="material-symbols-outlined text-2xl">replay_10</span>
+                            </button>
+                            <button id="play-pause-btn"
+                                class="w-14 h-14 bg-[#00f2ff] text-black rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(0,242,255,0.4)] hover:scale-110 transition-transform">
+                                <span class="material-symbols-outlined text-3xl font-black">play_arrow</span>
+                            </button>
+                            <button onclick="skip(10)"
+                                class="text-slate-500 hover:text-white transition-colors relative" title="+10s">
+                                <span class="material-symbols-outlined text-2xl">forward_10</span>
+                            </button>
+                        </div>
+
+                        <div class="w-24"></div>
+                    </div>
+                </div>
+                <audio id="audio-player" class="hidden"></audio>
+            </div>
+
+            <!-- 2. Main Content "Smart" Split Layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+                <!-- Left Column: Transcript (Takes up 7 cols - larger) -->
+                <div class="lg:col-span-7 flex flex-col gap-6">
+                    <div
+                        class="glass-panel p-8 rounded-[2rem] border border-white/10 min-h-[500px] h-[calc(100vh-200px)] flex flex-col">
+                        <div class="flex items-center justify-between mb-6 pb-6 border-b border-white/5">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-[#00f2ff]">segment</span>
+                                <h3 class="font-black uppercase tracking-widest text-sm">Transcript</h3>
+                            </div>
+                            <button onclick="copyToClipboard('transcript-content')"
+                                class="text-[#00f2ff] text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-[#00f2ff]/10 px-3 py-1 rounded-lg transition-colors">
+                                <span class="material-symbols-outlined text-sm">content_copy</span> Copy
+                            </button>
+                        </div>
+                        <div class="flex-1 overflow-y-auto custom-scrollbar pr-2">
+                            <p id="transcript-content"
+                                class="text-slate-300 leading-relaxed font-mono text-sm whitespace-pre-wrap"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Tools Stack (Summary, Radar, Stats) - 5 cols -->
+                <div class="lg:col-span-5 flex flex-col gap-6">
+
+                    <!-- Executive Summary (Dynamic Height) -->
+                    <div
+                        class="glass-panel p-8 rounded-[2rem] border border-white/10 min-h-[200px] flex-1 flex flex-col">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-[#bc13fe]">auto_awesome</span>
+                                <h3 class="font-black uppercase tracking-widest text-sm text-[#bc13fe]">Executive
+                                    Summary</h3>
+                            </div>
+                            <button onclick="copyToClipboard('summary-content')"
+                                class="text-[#bc13fe] hover:text-white transition-colors">
+                                <span class="material-symbols-outlined text-sm">content_copy</span>
+                            </button>
+                        </div>
+                        <div class="bg-white/5 p-4 rounded-xl border border-white/5">
+                            <p id="summary-content" class="text-slate-300 leading-relaxed text-sm"></p>
+                        </div>
+                    </div>
+
+                    <!-- Radar Chart (Square-ish) -->
+                    <div
+                        class="glass-panel p-6 rounded-[2rem] border border-white/10 flex flex-col items-center justify-center relative overflow-hidden h-[300px]">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#bc13fe] to-[#bc13fe]/20">
+                        </div>
+                        <div class="flex items-center gap-2 mb-2 w-full px-2">
+                            <span class="material-symbols-outlined text-[#bc13fe]">all_inclusive</span>
+                            <h3 class="font-black uppercase tracking-widest text-xs text-[#bc13fe]">Sonic DNA</h3>
+                        </div>
+                        <div class="w-full h-full relative p-2">
+                            <canvas id="dnaChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Key Insights / Download -->
+                    <div class="glass-panel p-6 rounded-[2rem] border border-white/10">
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div class="p-4 bg-[#0a0f1e]/50 rounded-xl border border-white/5">
+                                <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Words
+                                </p>
+                                <p id="insight-word-count" class="text-2xl font-black text-white">0</p>
+                            </div>
+                            <div class="p-4 bg-[#0a0f1e]/50 rounded-xl border border-white/5">
+                                <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">
+                                    Confidence</p>
+                                <p id="insight-confidence" class="text-2xl font-black text-[#00ffc3]">0%</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="material-symbols-outlined text-[#00f2ff] text-base">check_circle</span>
+                            <h4 class="font-black uppercase tracking-widest text-xs">Highlights</h4>
+                        </div>
+                        <ul id="insight-bullets" class="space-y-2 mb-4"></ul>
+                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Topics</p>
+                        <div id="keywords-container" class="flex flex-wrap gap-2 mb-4"></div>
+
+                        <button onclick="downloadPDF()"
+                            class="w-full glass-panel py-3 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all border border-white/10">
+                            <span class="material-symbols-outlined">picture_as_pdf</span> Download Report
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </main>
+    <footer class="py-12 px-6 border-t border-white/5 bg-[#01030a]/50 backdrop-blur-md">
+        <div class="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+            <div class="flex items-center gap-3">
+                <span class="text-sm font-black tracking-tighter italic uppercase text-slate-400">Flow_OS <span
+                        class="text-slate-600">v3.3.0</span></span>
+            </div>
+            <p class="text-[10px] font-black text-slate-600 uppercase tracking-[0.5em]">System status: Live.</p>
+        </div>
+    </footer>
+</body>
+
+</html>
