@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transcript Details - TranscribeFlow</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Outfit:wght@100;200;300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+
+    <!-- Material Symbols -->
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,700,0,0" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <!-- Chart.js for Sonic DNA -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Clerk SDK -->
+    <script async crossorigin="anonymous"
+        data-clerk-publishable-key="pk_test_dXNlZnVsLWNoZWV0YWgtMzguY2xlcmsuYWNjb3VudHMuZGV2JA"
+        src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" type="text/javascript"></script>
+
+    <!-- Custom CSS & JS -->
+    <link href="/static/css/style.css" rel="stylesheet" />
+    <script src="/static/js/notifications.js"></script>
+
+    <style>
+        @keyframes wave {
+            from {
+                transform: scaleY(0.5);
+                opacity: 0.7;
+            }
+
+            to {
+                transform: scaleY(1.2);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body class="antialiased min-h-screen mesh-gradient-dark text-white font-['Outfit']">
+
+    <!-- Notification Container (Required by notifications.js) -->
+    <div id="notification-container"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 w-full bg-[#020617]/80 backdrop-blur-xl z-50 border-b border-white/10">
+        <div class="max-w-[1600px] mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-10 h-10 bg-[#00f2ff] rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(0,242,255,0.4)]">
+                    <span class="material-symbols-outlined text-black font-black text-xl">graphic_eq</span>
+                </div>
+                <span class="text-2xl font-black tracking-tighter italic uppercase">Transcribe<span
+                        class="text-[#00f2ff]">Flow</span></span>
+            </div>
+            <div class="flex items-center gap-8">
+                <a class="text-[10px] font-black tracking-[0.2em] uppercase text-slate-400 hover:text-[#00f2ff] transition-colors"
+                    href="/home">Home</a>
+                <a class="text-[10px] font-black tracking-[0.2em] uppercase text-slate-400 hover:text-white transition-colors"
+                    href="/upload-page">Upload</a>
+                <a class="text-[10px] font-black tracking-[0.2em] uppercase text-slate-400 hover:text-[#bc13fe] transition-colors"
+                    href="/history-page">History</a>
+                <a class="text-[10px] font-black tracking-[0.2em] uppercase text-slate-400 hover:text-[#00ffc3] transition-colors"
+                    href="/profile">Profile</a>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="/upload-page"
+                    class="text-slate-400 hover:text-white font-bold uppercase text-xs tracking-widest transition-colors">Upload</a>
+                <a href="/history-page"
+                    class="text-slate-400 hover:text-white font-bold uppercase text-xs tracking-widest transition-colors">History</a>
+                <button id="signout-btn"
+                    class="bg-red-500/20 text-red-400 px-4 py-2 rounded-xl font-bold uppercase text-xs tracking-widest hover:bg-red-500/30 transition-colors border border-red-500/30">
+                    Sign Out
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-24 pb-12 px-6 max-w-[1400px] mx-auto">
+
+        <!-- Back Button -->
+        <div class="mb-6">
+            <a href="/history-page"
+                class="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
+                <span class="material-symbols-outlined">arrow_back</span>
+                <span class="font-bold uppercase text-xs tracking-widest">Back to History</span>
+            </a>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading" class="text-center py-20">
+            <div
+                class="inline-block w-16 h-16 border-4 border-[#00f2ff]/30 border-t-[#00f2ff] rounded-full animate-spin">
+            </div>
+            <p class="mt-4 text-slate-400 font-bold uppercase tracking-widest">Loading transcript...</p>
+        </div>
+
+        <!-- Details Content (hidden initially) -->
+        <div id="details-content" class="hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+                <!-- Main Content (Left) -->
+                <div class="lg:col-span-8 space-y-6">
+
+                    <!-- Header -->
+                    <div class="glass-panel p-6 rounded-2xl border border-white/10">
+                        <h1 id="filename" class="text-3xl font-black mb-2"></h1>
+                        <p id="timestamp" class="text-slate-400 text-sm font-bold uppercase tracking-widest"></p>
+                    </div>
+
+                    <!-- Custom Audio Player with Waveform -->
+                    <div class="glass-panel p-6 rounded-2xl border border-[#00f2ff]/30">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-[#00f2ff]/20 rounded-lg flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-[#00f2ff]">graphic_eq</span>
+                                </div>
+                                <div>
+                                    <h3 id="player-filename"
+                                        class="text-sm font-black uppercase tracking-widest text-white">Audio Playback
+                                    </h3>
+                                    <p class="text-xs text-slate-400 font-bold uppercase tracking-widest">AI Analysis
+                                        Ready</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="text-center">
+                                    <span
+                                        class="text-[10px] text-slate-400 font-bold uppercase tracking-widest block">Words</span>
+                                    <span id="player-words" class="text-[#00f2ff] font-black text-lg">0</span>
+                                </div>
+                                <div class="text-center">
+                                    <span
+                                        class="text-[10px] text-slate-400 font-bold uppercase tracking-widest block">Confidence</span>
+                                    <span id="player-confidence" class="text-[#00ffc3] font-black text-lg">0%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Waveform Visualizer -->
+                        <div
+                            class="relative bg-gradient-to-br from-[#00f2ff]/10 to-[#bc13fe]/10 rounded-xl p-6 mb-4 border border-white/10">
+                            <div class="flex items-center justify-center gap-1 h-24" id="waveform-container">
+                                <!-- Waveform bars will be generated by JS -->
+                            </div>
+
+                            <!-- Play Controls Overlay -->
+                            <div class="absolute inset-0 flex items-center justify-center gap-6">
+                                <button id="skip-back"
+                                    class="w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center backdrop-blur-xl transition-all border border-white/20">
+                                    <span class="material-symbols-outlined text-white">replay_10</span>
+                                </button>
+                                <button id="play-pause-btn"
+                                    class="w-16 h-16 bg-gradient-to-br from-[#00f2ff] to-[#00ffc3] hover:scale-110 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(0,242,255,0.5)] transition-all">
+                                    <span
+                                        class="material-symbols-outlined text-black text-4xl font-bold">play_arrow</span>
+                                </button>
+                                <button id="skip-forward"
+                                    class="w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center backdrop-blur-xl transition-all border border-white/20">
+                                    <span class="material-symbols-outlined text-white">forward_10</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="relative mb-3">
+                            <div class="h-2 bg-white/10 rounded-full overflow-hidden">
+                                <div id="progress-bar"
+                                    class="h-full bg-gradient-to-r from-[#00f2ff] to-[#00ffc3] w-0 transition-all">
+                                </div>
+                            </div>
+                            <input type="range" id="seek-bar" min="0" max="100" value="0"
+                                class="absolute inset-0 w-full h-2 opacity-0 cursor-pointer">
+                        </div>
+
+                        <!-- Time Display -->
+                        <div class="flex items-center justify-between text-xs font-bold uppercase tracking-widest">
+                            <span id="current-time" class="text-[#00f2ff]">0:00</span>
+                            <span id="duration-time" class="text-slate-400">0:00</span>
+                        </div>
+
+                        <!-- Hidden Audio Element -->
+                        <audio id="audio-player" class="hidden">
+                            <source id="audio-source" type="audio/mpeg">
+                        </audio>
+                    </div>
+
+                    <!-- Full Transcript -->
+                    <div class="glass-panel p-8 rounded-2xl border border-white/10">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-xl font-black uppercase tracking-tight">Full Transcript</h2>
+                            <button onclick="copyTranscript()"
+                                class="px-4 py-2 bg-[#00f2ff]/20 text-[#00f2ff] rounded-xl font-bold uppercase text-xs tracking-widest hover:bg-[#00f2ff]/30 transition-colors border border-[#00f2ff]/30 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm">content_copy</span>
+                                Copy
+                            </button>
+                        </div>
+                        <div id="transcript" class="text-slate-200 leading-relaxed whitespace-pre-wrap"></div>
+                    </div>
+
+                    <!-- Summary -->
+                    <div class="glass-panel p-8 rounded-2xl border border-white/10">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-xl font-black uppercase tracking-tight">AI Summary</h2>
+                            <button onclick="copySummary()"
+                                class="px-4 py-2 bg-[#bc13fe]/20 text-[#bc13fe] rounded-xl font-bold uppercase text-xs tracking-widest hover:bg-[#bc13fe]/30 transition-colors border border-[#bc13fe]/30 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm">content_copy</span>
+                                Copy
+                            </button>
+                        </div>
+                        <div id="summary" class="text-slate-200 leading-relaxed"></div>
+                    </div>
+
+                    <!-- Keywords -->
+                    <div class="glass-panel p-6 rounded-2xl border border-white/10">
+                        <h3 class="text-sm font-black uppercase tracking-widest text-slate-400 mb-4">Keywords</h3>
+                        <div id="keywords" class="flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+
+                <!-- Sidebar (Right) -->
+                <div class="lg:col-span-4 space-y-6">
+
+                    <!-- Sonic DNA -->
+                    <div class="glass-panel p-6 rounded-2xl border border-white/10">
+                        <h3 class="text-sm font-black uppercase tracking-widest text-slate-400 mb-4">Sonic DNA</h3>
+                        <div class="relative w-full h-64 mb-4">
+                            <canvas id="radarChart"></canvas>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-white/5 rounded-xl p-3 text-center">
+                                <span
+                                    class="text-[10px] text-slate-400 font-bold uppercase tracking-widest block mb-1">Energy</span>
+                                <span id="energy" class="text-[#00ffc3] font-black text-xl"></span>
+                            </div>
+                            <div class="bg-white/5 rounded-xl p-3 text-center">
+                                <span
+                                    class="text-[10px] text-slate-400 font-bold uppercase tracking-widest block mb-1">Pace</span>
+                                <span id="pace" class="text-[#00f2ff] font-black text-xl"></span>
+                            </div>
+                            <div class="bg-white/5 rounded-xl p-3 text-center">
+                                <span
+                                    class="text-[10px] text-slate-400 font-bold uppercase tracking-widest block mb-1">Clarity</span>
+                                <span id="clarity" class="text-[#bc13fe] font-black text-xl"></span>
+                            </div>
+                            <div class="bg-white/5 rounded-xl p-3 text-center">
+                                <span
+                                    class="text-[10px] text-slate-400 font-bold uppercase tracking-widest block mb-1">Duration</span>
+                                <span id="duration" class="text-[#ffd700] font-black text-xl"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="glass-panel p-6 rounded-2xl border border-white/10">
+                        <h3 class="text-sm font-black uppercase tracking-widest text-slate-400 mb-4">Statistics</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-400 text-sm font-bold uppercase">Word Count</span>
+                                <span id="word-count" class="text-white font-black"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bullet Points -->
+                    <div class="glass-panel p-6 rounded-2xl border border-white/10">
+                        <h3 class="text-sm font-black uppercase tracking-widest text-slate-400 mb-4">Key Points</h3>
+                        <ul id="bullet-points" class="space-y-2 text-sm text-slate-300"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Clerk Authentication -->
+    <script>
+        const clerkPubKey = "pk_test_Y29vcC1naWxsLTQ0LmNsZXJrLmFjY291bnRzLmRldiQ";
+        Clerk.load({
+            publishableKey: clerkPubKey
+        }).then(Clerk => {
+            if (!Clerk.user) {
+                window.location.href = '/';
+            }
+
+            document.getElementById('signout-btn').addEventListener('click', () => {
+                Clerk.signOut().then(() => {
+                    window.location.href = '/';
+                });
+            });
+        });
+    </script>
+
+    <!-- Details Script -->
+    <script src="{{ url_for('static', filename='js/details.js') }}"></script>
+</body>
+
+</html>

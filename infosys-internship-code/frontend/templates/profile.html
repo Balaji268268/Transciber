@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - TranscribeFlow</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Outfit:wght@400;600;800;900&display=swap"
+        rel="stylesheet">
+
+    <!-- Material Symbols -->
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Custom CSS -->
+    <link href="/static/css/style.css" rel="stylesheet" />
+
+    <!-- Clerk SDK -->
+    <script async crossorigin="anonymous"
+        data-clerk-publishable-key="pk_test_dXNlZnVsLWNoZWV0YWgtMzguY2xlcmsuYWNjb3VudHMuZGV2JA"
+        src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" type="text/javascript"></script>
+
+    <style>
+        /* Custom Clerk styling */
+        #clerk-user-profile {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Override Clerk default styles for dark theme */
+        .cl-rootBox {
+            background: transparent !important;
+        }
+
+        .cl-card {
+            background: rgba(255, 255, 255, 0.05) !important;
+            backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        .cl-headerTitle,
+        .cl-headerSubtitle,
+        .cl-formFieldLabel,
+        .cl-profileSectionTitle {
+            color: #ffffff !important;
+        }
+
+        .cl-formFieldInput {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+            color: #ffffff !important;
+        }
+
+        .cl-formButtonPrimary {
+            background: linear-gradient(135deg, #00f2ff 0%, #00ffc3 100%) !important;
+            color: #000000 !important;
+            font-weight: 700 !important;
+        }
+
+        .cl-formButtonPrimary:hover {
+            background: linear-gradient(135deg, #00d9e6 0%, #00e6b0 100%) !important;
+        }
+
+        .cl-internal-b3fm6y {
+            color: #94a3b8 !important;
+        }
+
+        .cl-profileSectionContent {
+            border-color: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .cl-accordionTriggerButton {
+            color: #ffffff !important;
+        }
+
+        .cl-menuItem {
+            color: #ffffff !important;
+        }
+
+        .cl-menuItem:hover {
+            background: rgba(0, 242, 255, 0.1) !important;
+        }
+    </style>
+</head>
+
+<body class="antialiased mesh-gradient-bg min-h-screen">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass-panel border-b border-white/10">
+        <div class="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3 group cursor-pointer" onclick="window.location.href='/'">
+                <div
+                    class="w-8 h-8 bg-gradient-to-br from-[#00f2ff] via-[#bc13fe] to-[#00ffc3] rounded flex items-center justify-center shadow-[0_0_15px_rgba(0,242,255,0.4)]">
+                    <span class="material-symbols-outlined text-white text-xl font-bold">graphic_eq</span>
+                </div>
+                <span class="text-xl font-black tracking-tighter italic">Transcribe<span
+                        class="text-[#00f2ff]">Flow</span> <span
+                        class="text-xs uppercase tracking-[0.2em] font-bold text-slate-500 ml-2">Studio</span></span>
+            </div>
+            <div class="hidden md:flex items-center gap-8">
+                <a class="text-[10px] font-black tracking-[0.2em] uppercase text-slate-400 hover:text-[#00f2ff] transition-colors"
+                    href="/home">Home</a>
+                <a class="text-[10px] font-black tracking-[0.2em] uppercase text-slate-400 hover:text-white transition-colors"
+                    href="/upload-page">Upload</a>
+                <a class="text-[10px] font-black tracking-[0.2em] uppercase text-slate-400 hover:text-[#bc13fe] transition-colors"
+                    href="/history-page">History</a>
+                <a class="text-[10px] font-black tracking-[0.2em] uppercase text-[#00f2ff]" href="/profile">Profile</a>
+            </div>
+            <div class="flex items-center gap-6">
+                <!-- User Profile -->
+                <a href="/profile" id="user-profile"
+                    class="flex items-center gap-3 px-3 py-2 rounded-full bg-white/5 border border-white/10 hover:border-[#00f2ff]/30 hover:bg-white/10 transition-all cursor-pointer">
+                    <div
+                        class="w-8 h-8 rounded-full bg-gradient-to-br from-[#00f2ff] to-[#bc13fe] flex items-center justify-center">
+                        <span class="material-symbols-outlined text-white text-lg">person</span>
+                    </div>
+                    <span id="user-name-nav" class="text-xs font-bold text-white">Loading...</span>
+                </a>
+                <!-- Sign Out Button -->
+                <button id="signout-btn"
+                    class="flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 transition-colors">
+                    <span class="material-symbols-outlined text-red-400 text-sm">logout</span>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-red-400">Sign Out</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-24 pb-12 px-6 max-w-[1000px] mx-auto">
+
+        <!-- Clerk User Profile Component (Full Width) -->
+        <div id="clerk-user-profile" class="w-full"></div>
+
+    </main>
+
+    <!-- Clerk Authentication -->
+    <script>
+        window.addEventListener("load", async function () {
+            await Clerk.load();
+
+            if (!Clerk.user) {
+                window.location.href = '/';
+                return;
+            }
+
+            // Update user name in nav
+            const userName = Clerk.user.firstName || Clerk.user.primaryEmailAddress?.emailAddress || 'User';
+            if (document.getElementById('user-name-nav')) {
+                document.getElementById('user-name-nav').textContent = userName;
+            }
+
+            // Mount Clerk UserProfile component
+            Clerk.mountUserProfile(document.getElementById('clerk-user-profile'), {
+                appearance: {
+                    elements: {
+                        rootBox: 'w-full',
+                        card: 'glass-panel border border-white/10',
+                        headerTitle: 'text-white font-black',
+                        headerSubtitle: 'text-slate-400',
+                        formFieldLabel: 'text-white font-bold',
+                        formFieldInput: 'bg-white/5 border-white/10 text-white',
+                        formButtonPrimary: 'bg-gradient-to-r from-[#00f2ff] to-[#00ffc3] text-black font-bold hover:scale-105',
+                        profileSectionTitle: 'text-white font-black',
+                        accordionTriggerButton: 'text-white hover:bg-white/5',
+                        menuItem: 'text-white hover:bg-[#00f2ff]/10'
+                    },
+                    variables: {
+                        colorPrimary: '#00f2ff',
+                        colorBackground: 'transparent',
+                        colorText: '#ffffff',
+                        colorInputBackground: 'rgba(255, 255, 255, 0.05)',
+                        colorInputText: '#ffffff',
+                    }
+                }
+            });
+
+            // Sign out button
+            document.getElementById('signout-btn').addEventListener('click', async () => {
+                await Clerk.signOut();
+                window.location.href = '/';
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,193 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Outfit:wght@400;600;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+
+:root {
+    --neon-blue: #00f2ff;
+    --neon-purple: #bc13fe;
+    --neon-teal: #00ffc3;
+    --deep-space: #020617;
+}
+
+/* Base Styles */
+body {
+    background-color: #020617;
+    color: #f1f5f9;
+    font-family: 'Space Grotesk', sans-serif;
+    scroll-behavior: smooth;
+    margin: 0;
+    overflow-x: hidden;
+    /* Added to match original style */
+}
+
+h1,
+h2,
+h3 {
+    font-family: 'Outfit', sans-serif;
+}
+
+/* Background Gradients */
+.mesh-gradient-bg {
+    background-color: #020617;
+    background-image:
+        radial-gradient(at 0% 0%, rgba(0, 242, 255, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(188, 19, 254, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(0, 255, 195, 0.1) 0px, transparent 50%),
+        radial-gradient(at 0% 100%, rgba(0, 153, 255, 0.1) 0px, transparent 50%);
+}
+
+.section-mesh-blue {
+    background: radial-gradient(circle at 20% 50%, rgba(0, 242, 255, 0.08) 0%, transparent 40%), #030712;
+}
+
+.section-mesh-purple {
+    background: radial-gradient(circle at 80% 50%, rgba(188, 19, 254, 0.08) 0%, transparent 40%), #020617;
+}
+
+/* Cards & Effects */
+.neon-glow-card-blue {
+    border: 1px solid rgba(0, 242, 255, 0.5);
+    box-shadow: 0 0 20px rgba(0, 242, 255, 0.15), inset 0 0 10px rgba(0, 242, 255, 0.05);
+}
+
+.neon-glow-card-purple {
+    border: 1px solid rgba(188, 19, 254, 0.5);
+    box-shadow: 0 0 20px rgba(188, 19, 254, 0.15), inset 0 0 10px rgba(188, 19, 254, 0.05);
+}
+
+.neon-glow-card-teal {
+    border: 1px solid rgba(0, 255, 195, 0.5);
+    box-shadow: 0 0 20px rgba(0, 255, 195, 0.15), inset 0 0 10px rgba(0, 255, 195, 0.05);
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.text-gradient-mesh {
+    background: linear-gradient(135deg, #00f2ff 0%, #bc13fe 50%, #00ffc3 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Upload Page Specifics */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.neon-border-teal {
+    box-shadow: 0 0 20px rgba(0, 255, 195, 0.2), inset 0 0 10px rgba(0, 255, 195, 0.1);
+    border-color: rgba(0, 255, 195, 0.5);
+}
+
+.neon-border-purple {
+    box-shadow: 0 0 20px rgba(188, 19, 254, 0.2), inset 0 0 10px rgba(188, 19, 254, 0.1);
+    border-color: rgba(188, 19, 254, 0.5);
+}
+
+.waveform-bar {
+    width: 0.25rem;
+    background: linear-gradient(to top, #00f2ff, #bc13fe);
+    border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(188, 19, 254, 0.3);
+    border-radius: 10px;
+}
+
+/* Toggles & Interactive Elements */
+.toggle-track {
+    width: 3rem;
+    /* w-12 */
+    height: 1.5rem;
+    /* h-6 */
+    background-color: rgb(30 41 59);
+    /* bg-slate-800 */
+    border-radius: 9999px;
+    position: relative;
+    transition: background-color 300ms, color 300ms;
+}
+
+.toggle-thumb {
+    position: absolute;
+    left: 0.25rem;
+    /* left-1 */
+    top: 0.25rem;
+    /* top-1 */
+    width: 1rem;
+    /* w-4 */
+    height: 1rem;
+    /* h-4 */
+    background-color: white;
+    border-radius: 9999px;
+    transition: transform 300ms;
+}
+
+/* Animations if needed */
+@keyframes pulse-slow {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Styles reused from login/auth pages (kept for compatibility) */
+.mesh-gradient-auth {
+    background:
+        radial-gradient(at 0% 0%, rgba(0, 242, 255, 0.4) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(188, 19, 254, 0.4) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(0, 255, 195, 0.3) 0px, transparent 50%),
+        radial-gradient(at 0% 100%, rgba(0, 153, 255, 0.3) 0px, transparent 50%),
+        #020617;
+    position: relative;
+}
+
+.glass-input {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.glass-input:focus {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--neon-blue);
+    box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+    outline: none;
+}
+
+.glow-button {
+    background: linear-gradient(135deg, #00f2ff 0%, #bc13fe 100%);
+    box-shadow: 0 0 30px rgba(188, 19, 254, 0.4);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.glow-button:hover {
+    box-shadow: 0 0 50px rgba(0, 242, 255, 0.6);
+    transform: scale(1.02);
+}
+
+.text-gradient {
+    background: linear-gradient(135deg, #00f2ff 0%, #bc13fe 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}

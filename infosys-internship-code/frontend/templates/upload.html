@@ -1,0 +1,544 @@
+﻿<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>TranscribeFlow Studio Workspace</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Outfit:wght@400;600;800;900&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Clerk SDK -->
+    <script async crossorigin="anonymous"
+        data-clerk-publishable-key="pk_test_dXNlZnVsLWNoZWV0YWgtMzguY2xlcmsuYWNjb3VudHMuZGV2JA"
+        src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" type="text/javascript"></script>
+
+    <script>
+        // Make getToken available globally for upload.js
+        window.getToken = async function () {
+            if (window.Clerk && window.Clerk.session) {
+                return await window.Clerk.session.getToken();
+            }
+            return null;
+        };
+
+        // Check authentication when page loads
+        window.addEventListener("load", async function () {
+            await Clerk.load();
+
+            // If NOT logged in, redirect to login
+            if (!Clerk.user) {
+                window.location.href = "/login";
+                return;
+            }
+
+            // User is authenticated, load their info
+            console.log("User authenticated:", Clerk.user.primaryEmailAddress.emailAddress);
+            if (document.getElementById('user-name')) {
+                document.getElementById('user-name').textContent =
+                    Clerk.user.firstName || Clerk.user.primaryEmailAddress.emailAddress;
+            }
+        });
+
+        // Sign out function  
+        async function signOut() {
+            if (window.Clerk) {
+                await Clerk.signOut();
+                window.location.href = "/";
+            }
+        }
+    </script>
+
+    <link href="/static/css/style.css" rel="stylesheet" />
+    <script src="/static/js/notifications.js"></script>
+    <script src="/static/js/trial-mode.js"></script>
+    <script src="/static/js/upload.js" defer></script>
+</head>
+
+<body class="antialiased min-h-screen mesh-gradient-dark text-white font-['Outfit']">
+
+    <!-- Notification Container (Required by notifications.js) -->
+    <div id="notification-container"></div>
+    <nav class="fixed top-0 w-full z-50 glass-panel border-b border-white/10">
+        <div class="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3 group cursor-pointer" onclick="window.location.href='/'">
+                <div
+                    class="w-8 h-8 bg-gradient-to-br from-[#00f2ff] via-[#bc13fe] to-[#00ffc3] rounded flex items-center justify-center shadow-[0_0_15px_rgba(0,242,255,0.4)]">
+                    <span class="material-symbols-outlined text-white text-xl font-bold">graphic_eq</span>
+                </div>
+                <span class="text-xl font-black tracking-tighter italic">Transcribe<span
+                        class="text-[#00f2ff]">Flow</span> <span
+                        class="text-xs uppercase tracking-[0.2em] font-bold text-slate-500 ml-2">Studio</span></span>
+            </div>
+            <div class="hidden md:flex items-center gap-8">
+                <a class="text-[10px] font-black tracking-[0.2em] uppercase text-slate-400 hover:text-[#00f2ff] transition-colors"
+                    href="/home">Home</a>
+                <a class="text-[10px] font-black tracking-[0.2em] uppercase text-[#00f2ff]"
+                    href="/upload-page">Upload</a>
+                <a class="text-[10px] font-black tracking-[0.2em] uppercase text-slate-400 hover:text-[#bc13fe] transition-colors"
+                    href="/history-page">History</a>
+                <a class="text-[10px] font-black tracking-[0.2em] uppercase text-slate-400 hover:text-[#00ffc3] transition-colors"
+                    href="/profile">Profile</a>
+            </div>
+            <div class="flex items-center gap-6">
+                <!-- User Profile (clickable) -->
+                <a href="/profile" id="user-profile"
+                    class="flex items-center gap-3 px-3 py-2 rounded-full bg-white/5 border border-white/10 hover:border-[#00f2ff]/30 hover:bg-white/10 transition-all cursor-pointer">
+                    <div
+                        class="w-8 h-8 rounded-full bg-gradient-to-br from-[#00f2ff] to-[#bc13fe] flex items-center justify-center">
+                        <span class="material-symbols-outlined text-white text-lg">person</span>
+                    </div>
+                    <span id="user-name" class="text-xs font-bold text-white">Loading...</span>
+                </a>
+                <!-- Sign Out Button -->
+                <button onclick="signOut()"
+                    class="flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 transition-colors">
+                    <span class="material-symbols-outlined text-red-400 text-sm">logout</span>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-red-400">Sign Out</span>
+                </button>
+            </div>
+            <script>
+                // Load user info when page loads
+                window.addEventListener('load', async () => {
+                    if (window.Clerk && window.Clerk.user) {
+                        const user = window.Clerk.user;
+                        document.getElementById('user-name').textContent = user.firstName || user.emailAddresses[0].emailAddress;
+                    }
+                });
+            </script>
+        </div>
+    </nav>
+    <main class="pt-24 pb-12 px-6 max-w-[1600px] mx-auto">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+            <div class="lg:col-span-12">
+                <!-- Language Selector -->
+                <div class="mb-6">
+                    <label class="block text-sm font-bold text-slate-400 mb-3 uppercase tracking-widest">
+                        Translation Language (Optional)
+                    </label>
+                    <div class="relative">
+                        <!-- Custom Dropdown -->
+                        <div class="custom-dropdown">
+                            <button type="button" id="language-dropdown-btn"
+                                class="w-full glass-panel border border-white/10 rounded-xl px-4 py-4 text-left text-white focus:outline-none focus:border-[#00f2ff] transition-colors flex items-center justify-between group hover:bg-white/5">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-2xl" id="selected-flag">🌍</span>
+                                    <span id="selected-language" class="font-medium">Original (No Translation)</span>
+                                </div>
+                                <span
+                                    class="material-symbols-outlined text-slate-400 group-hover:text-[#00f2ff] transition-colors">expand_more</span>
+                            </button>
+
+                            <!-- Dropdown Menu -->
+                            <div id="language-dropdown-menu"
+                                class="hidden absolute top-full left-0 right-0 mt-2 glass-panel border border-white/10 rounded-xl overflow-hidden z-50 max-h-96 flex flex-col shadow-[0_0_40px_rgba(0,242,255,0.2)]">
+                                <!-- Search Input -->
+                                <div class="p-3 border-b border-white/10 sticky top-0 bg-[#020617]/80 backdrop-blur-xl">
+                                    <div class="relative">
+                                        <span
+                                            class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+                                        <input type="text" id="language-search" placeholder="Search languages..."
+                                            class="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-[#00f2ff] transition-colors text-sm">
+                                    </div>
+                                </div>
+
+                                <!-- Language Options -->
+                                <div id="language-options" class="overflow-y-auto">
+                                    <div class="language-option" data-value="original" data-flag="🌍"
+                                        data-name="Original (No Translation)">
+                                        <span class="text-2xl">🌍</span>
+                                        <span>Original (No Translation)</span>
+                                    </div>
+                                    <div class="language-option" data-value="es" data-flag="🇪🇸" data-name="Spanish">
+                                        <span class="text-2x">🇪🇸</span>
+                                        <span>Spanish</span>
+                                    </div>
+                                    <div class="language-option" data-value="fr" data-flag="🇫🇷" data-name="French">
+                                        <span class="text-2xl">🇫🇷</span>
+                                        <span>French</span>
+                                    </div>
+                                    <div class="language-option" data-value="de" data-flag="🇩🇪" data-name="German">
+                                        <span class="text-2xl">🇩🇪</span>
+                                        <span>German</span>
+                                    </div>
+                                    <div class="language-option" data-value="hi" data-flag="🇮🇳" data-name="Hindi">
+                                        <span class="text-2xl">🇮🇳</span>
+                                        <span>Hindi</span>
+                                    </div>
+                                    <div class="language-option" data-value="te" data-flag="🇮🇳" data-name="Telugu">
+                                        <span class="text-2xl">🇮🇳</span>
+                                        <span>Telugu</span>
+                                    </div>
+                                    <div class="language-option" data-value="ta" data-flag="🇮🇳" data-name="Tamil">
+                                        <span class="text-2xl">🇮🇳</span>
+                                        <span>Tamil</span>
+                                    </div>
+                                    <div class="language-option" data-value="ml" data-flag="🇮🇳" data-name="Malayalam">
+                                        <span class="text-2xl">🇮🇳</span>
+                                        <span>Malayalam</span>
+                                    </div>
+                                    <div class="language-option" data-value="kn" data-flag="🇮🇳" data-name="Kannada">
+                                        <span class="text-2xl">🇮🇳</span>
+                                        <span>Kannada</span>
+                                    </div>
+                                    <div class="language-option" data-value="bn" data-flag="🇧🇩" data-name="Bengali">
+                                        <span class="text-2xl">🇧🇩</span>
+                                        <span>Bengali</span>
+                                    </div>
+                                    <div class="language-option" data-value="mr" data-flag="🇮🇳" data-name="Marathi">
+                                        <span class="text-2xl">🇮🇳</span>
+                                        <span>Marathi</span>
+                                    </div>
+                                    <div class="language-option" data-value="ur" data-flag="🇵🇰" data-name="Urdu">
+                                        <span class="text-2xl">🇵🇰</span>
+                                        <span>Urdu</span>
+                                    </div>
+                                    <div class="language-option" data-value="zh-cn" data-flag="🇨🇳"
+                                        data-name="Chinese (Simplified)">
+                                        <span class="text-2xl">🇨🇳</span>
+                                        <span>Chinese (Simplified)</span>
+                                    </div>
+                                    <div class="language-option" data-value="ja" data-flag="🇯🇵" data-name="Japanese">
+                                        <span class="text-2xl">🇯🇵</span>
+                                        <span>Japanese</span>
+                                    </div>
+                                    <div class="language-option" data-value="ko" data-flag="🇰🇷" data-name="Korean">
+                                        <span class="text-2xl">🇰🇷</span>
+                                        <span>Korean</span>
+                                    </div>
+                                    <div class="language-option" data-value="ar" data-flag="🇸🇦" data-name="Arabic">
+                                        <span class="text-2xl">🇸🇦</span>
+                                        <span>Arabic</span>
+                                    </div>
+                                    <div class="language-option" data-value="pt" data-flag="🇵🇹"
+                                        data-name="Portuguese">
+                                        <span class="text-2xl">🇵🇹</span>
+                                        <span>Portuguese</span>
+                                    </div>
+                                    <div class="language-option" data-value="it" data-flag="🇮🇹" data-name="Italian">
+                                        <span class="text-2xl">🇮🇹</span>
+                                        <span>Italian</span>
+                                    </div>
+                                    <div class="language-option" data-value="ru" data-flag="🇷🇺" data-name="Russian">
+                                        <span class="text-2xl">🇷🇺</span>
+                                        <span>Russian</span>
+                                    </div>
+                                    <div class="language-option" data-value="vi" data-flag="🇻🇳"
+                                        data-name="Vietnamese">
+                                        <span class="text-2xl">🇻🇳</span>
+                                        <span>Vietnamese</span>
+                                    </div>
+                                    <div class="language-option" data-value="th" data-flag="🇹🇭" data-name="Thai">
+                                        <span class="text-2xl">🇹🇭</span>
+                                        <span>Thai</span>
+                                    </div>
+                                    <div class="language-option" data-value="id" data-flag="🇮🇩"
+                                        data-name="Indonesian">
+                                        <span class="text-2xl">🇮🇩</span>
+                                        <span>Indonesian</span>
+                                    </div>
+                                    <div class="language-option" data-value="tr" data-flag="🇹🇷" data-name="Turkish">
+                                        <span class="text-2xl">🇹🇷</span>
+                                        <span>Turkish</span>
+                                    </div>
+                                    <div class="language-option" data-value="nl" data-flag="🇳🇱" data-name="Dutch">
+                                        <span class="text-2xl">🇳🇱</span>
+                                        <span>Dutch</span>
+                                    </div>
+                                    <div class="language-option" data-value="pl" data-flag="🇵🇱" data-name="Polish">
+                                        <span class="text-2xl">🇵🇱</span>
+                                        <span>Polish</span>
+                                    </div>
+                                    <div class="language-option" data-value="sv" data-flag="🇸🇪" data-name="Swedish">
+                                        <span class="text-2xl">🇸🇪</span>
+                                        <span>Swedish</span>
+                                    </div>
+                                    <div class="language-option" data-value="uk" data-flag="🇺🇦" data-name="Ukrainian">
+                                        <span class="text-2xl">🇺🇦</span>
+                                        <span>Ukrainian</span>
+                                    </div>
+                                    <div class="language-option" data-value="el" data-flag="🇬🇷" data-name="Greek">
+                                        <span class="text-2xl">🇬🇷</span>
+                                        <span>Greek</span>
+                                    </div>
+                                    <div class="language-option" data-value="he" data-flag="🇮🇱" data-name="Hebrew">
+                                        <span class="text-2xl">🇮🇱</span>
+                                        <span>Hebrew</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hidden input to store selected value -->
+                        <input type="hidden" id="target-language" value="original">
+                    </div>
+                </div>
+
+                <!-- Speaker Diarization Toggle -->
+                <div class="mb-8">
+                    <label
+                        class="flex items-center justify-between p-4 glass-panel rounded-2xl border border-white/10 cursor-pointer hover:bg-white/5 transition-all">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-[#bc13fe]/20 rounded-lg flex items-center justify-center">
+                                <span class="material-symbols-outlined text-[#bc13fe]">group</span>
+                            </div>
+                            <div>
+                                <span class="text-sm font-black uppercase tracking-widest text-white block">Speaker
+                                    Diarization</span>
+                                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Automatic
+                                    multi-speaker detection</span>
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <input type="checkbox" id="enable-diarization" class="sr-only peer" checked>
+                            <div
+                                class="w-14 h-7 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-[#00f2ff] peer-checked:to-[#bc13fe]">
+                            </div>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Upload Area -->
+                <div class="glass-panel p-10 rounded-[2.5rem] border border-dashed border-[#00f2ff]/30 flex flex-col items-center justify-center text-center relative overflow-hidden group hover:border-[#00f2ff] transition-colors duration-300"
+                    ondrophandler="handleDrop(event)" ondragover="handleDragOver(event)"
+                    ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+                    <div class="absolute inset-0 bg-gradient-to-br from-[#00f2ff]/5 to-transparent pointer-events-none">
+                    </div>
+                    <div
+                        class="w-20 h-20 bg-[#00f2ff]/10 rounded-3xl flex items-center justify-center mb-6 neon-border-teal">
+                        <span class="material-symbols-outlined text-[#00f2ff] text-4xl">cloud_upload</span>
+                    </div>
+                    <h2 class="text-3xl font-black mb-2 uppercase tracking-tight">Drop your masterpiece</h2>
+                    <p class="text-slate-400 mb-8 max-w-md">MP3, WAV, MP4, or MOV. Up to 2GB. High-fidelity AI ingestion
+                        starts here.</p>
+                    <!-- Added logic for file upload -->
+                    <input type="file" id="fileInput" class="hidden" onchange="handleFileSelect(event)"
+                        accept=".wav,.mp3,.mp4,.mov">
+                    <button onclick="triggerUpload()" id="uploadBtn"
+                        class="bg-[#00f2ff] text-black px-12 py-4 rounded-2xl font-black uppercase tracking-widest text-sm hover:scale-105 transition-all shadow-[0_0_30px_rgba(0,242,255,0.3)]">
+                        Start Transcribing
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="mb-8">
+            <a href="/history-page"
+                class="w-full glass-panel px-6 py-4 rounded-2xl flex items-center justify-between hover:bg-white/5 transition-colors border border-white/10 no-underline block">
+                <div class="flex items-center gap-4">
+                    <span class="material-symbols-outlined text-[#bc13fe]">history</span>
+                    <span class="text-sm font-black uppercase tracking-widest text-white">Recent Flows</span>
+                    <span id="history-count"
+                        class="bg-[#bc13fe]/20 text-[#bc13fe] text-[10px] px-2 py-0.5 rounded-full font-bold">0
+                        FILES</span>
+                </div>
+                <span class="material-symbols-outlined text-slate-500">expand_more</span>
+                </button>
+        </div>
+
+        <!-- Results Section: Hidden by default -->
+        <div id="results-section" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div class="lg:col-span-8 space-y-8">
+                <div class="glass-panel p-8 rounded-[2rem] neon-border-teal">
+                    <div class="flex items-center justify-between mb-8">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center">
+                                <span class="material-symbols-outlined text-[#00f2ff]">mic</span>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg" id="filename-display">Processing...</h3>
+                                <p class="text-xs text-slate-500 font-bold uppercase tracking-widest">AI Analysis Ready
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <!-- Metadata Badges -->
+                            <div class="flex gap-2">
+                                <div
+                                    class="bg-white/5 border border-white/10 px-4 py-2 rounded-xl flex flex-col items-center justify-center">
+                                    <span
+                                        class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Words</span>
+                                    <span id="word-count-display" class="text-white font-black text-sm">-</span>
+                                </div>
+                                <div
+                                    class="bg-white/5 border border-white/10 px-4 py-2 rounded-xl flex flex-col items-center justify-center">
+                                    <span
+                                        class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Confidence</span>
+                                    <span id="confidence-display" class="text-[#00ffc3] font-black text-sm">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Waveform Visualizer Placeholder -->
+                    <div class="h-24 flex items-end justify-between gap-1 mb-8 px-2 overflow-hidden opacity-50">
+                        <div class="waveform-bar h-[20%]"></div>
+                        <div class="waveform-bar h-[40%]"></div>
+                        <div class="waveform-bar h-[60%]"></div>
+                        <div class="waveform-bar h-[30%]"></div>
+                        <div class="waveform-bar h-[80%]"></div>
+                        <div class="waveform-bar h-[50%]"></div>
+                        <div class="waveform-bar h-[90%]"></div>
+                        <div class="waveform-bar h-[40%]"></div>
+                        <div class="waveform-bar h-[20%]"></div>
+                        <div class="waveform-bar h-[40%]"></div>
+                        <div class="waveform-bar h-[60%]"></div>
+                        <div class="waveform-bar h-[30%]"></div>
+                        <div class="waveform-bar h-[80%]"></div>
+                        <div class="waveform-bar h-[50%]"></div>
+                        <div class="waveform-bar h-[90%]"></div>
+                        <div class="waveform-bar h-[40%]"></div>
+                        <div class="waveform-bar h-[100%]"></div>
+                        <div class="waveform-bar h-[40%]"></div>
+                        <div class="waveform-bar h-[60%]"></div>
+                        <div class="waveform-bar h-[30%]"></div>
+                        <div class="waveform-bar h-[80%]"></div>
+                        <div class="waveform-bar h-[50%]"></div>
+                        <div class="waveform-bar h-[90%]"></div>
+                        <div class="waveform-bar h-[40%]"></div>
+                        <div class="waveform-bar h-[20%]"></div>
+                        <div class="waveform-bar h-[40%]"></div>
+                        <div class="waveform-bar h-[60%]"></div>
+                        <div class="waveform-bar h-[30%]"></div>
+                        <div class="waveform-bar h-[80%]"></div>
+                        <div class="waveform-bar h-[50%]"></div>
+                        <div class="waveform-bar h-[90%]"></div>
+                        <div class="waveform-bar h-[40%]"></div>
+                    </div>
+                    <div class="flex items-center justify-center gap-10">
+                        <!-- Hidden audio element -->
+                        <audio id="audio-player" class="hidden"></audio>
+
+                        <button onclick="seekAudio(-10, event)"
+                            class="material-symbols-outlined text-slate-500 hover:text-white transition-colors">replay_10</button>
+
+                        <button id="play-pause-btn" onclick="togglePlayPause(event)"
+                            class="w-16 h-16 bg-[#00f2ff] text-black rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(0,242,255,0.4)] hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined text-3xl">play_arrow</span>
+                        </button>
+
+                        <button onclick="seekAudio(30, event)"
+                            class="material-symbols-outlined text-slate-500 hover:text-white transition-colors">forward_30</button>
+                    </div>
+                </div>
+                <div class="glass-panel rounded-[2rem] flex flex-col h-[500px]">
+                    <div class="p-6 border-b border-white/10 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-[#00f2ff]">segment</span>
+                            <h3 class="font-black uppercase tracking-widest text-sm">Transcript</h3>
+                        </div>
+                        <button onclick="copyTranscript()"
+                            class="p-2 rounded-lg glass-input hover:bg-white/5 transition-all" title="Copy transcript">
+                            <span
+                                class="material-symbols-outlined text-slate-400 hover:text-[#00f2ff]">content_copy</span>
+                        </button>
+                    </div>
+                    <div class="p-8 overflow-y-auto custom-scrollbar flex-1 space-y-6" id="transcript-container">
+                        <!-- Transcript content will be injected here -->
+                        <p class="text-slate-400 italic">Waiting for transcript...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="lg:col-span-4">
+                <div class="glass-panel rounded-[2rem] neon-border-purple h-full sticky top-24">
+                    <!-- Summary -->
+                    <div
+                        class="glass-card rounded-t-[2rem] p-6 border-b border-white/10 bg-gradient-to-r from-[#bc13fe]/10 to-transparent">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-[#bc13fe]">auto_awesome</span>
+                                <h3 class="font-black uppercase tracking-widest text-sm">AI Tactical Summary</h3>
+                            </div>
+                            <button onclick="copySummary()"
+                                class="p-2 rounded-lg glass-input hover:bg-white/5 transition-all" title="Copy summary">
+                                <span
+                                    class="material-symbols-outlined text-slate-400 hover:text-[#00f2ff]">content_copy</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-8 space-y-8">
+
+                        <!-- Sonic DNA Radar Chart -->
+                        <div>
+                            <h4 class="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 mb-4">Sonic DNA
+                            </h4>
+                            <div class="relative w-full h-64">
+                                <canvas id="radarChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 mb-4">Core
+                                Narrative</h4>
+                            <div class="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                <p class="text-sm leading-relaxed text-slate-300" id="summary-text">
+                                    <!-- Summary Section -->
+                                <div class="space-y-4">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+                                            Summary</h4>
+                                        <button onclick="copySummary()"
+                                            class="p-1.5 rounded-lg glass-input hover:bg-white/5 transition-all"
+                                            title="Copy summary">
+                                            <span
+                                                class="material-symbols-outlined text-xs text-slate-400 hover:text-[#00f2ff]">content_copy</span>
+                                        </button>
+                                    </div>
+                                    <p id="summary-text" class="text-slate-300 text-sm leading-relaxed"></p>
+                                </div>
+
+                                <!-- Highlights Section -->
+                                <div>
+                                    <h4 class="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 mb-4">
+                                        Highlights
+                                    </h4>
+                                    <ul class="space-y-3" id="highlights-container">
+                                        <!-- Highlights will be injected here -->
+                                        <li class="text-sm text-slate-400 italic">Analysis pending...</li>
+                                    </ul>
+                                </div>
+
+                                <div>
+                                    <h4 class="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 mb-4">
+                                        Key
+                                        Keywords</h4>
+                                    <div class="flex flex-wrap gap-2" id="keywords-container">
+                                        <!-- Keywords will be injected here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    </main>
+    <footer class="py-12 px-6 border-t border-white/5 bg-[#01030a]/50 backdrop-blur-md">
+        <div class="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-6 h-6 bg-gradient-to-br from-[#00f2ff] to-[#bc13fe] rounded flex items-center justify-center">
+                    <span class="material-symbols-outlined text-white text-[10px] font-bold">graphic_eq</span>
+                </div>
+                <span class="text-sm font-black tracking-tighter italic uppercase text-slate-400">Flow_OS <span
+                        class="text-slate-600">v2.4.0</span></span>
+            </div>
+            <p class="text-[10px] font-black text-slate-600 uppercase tracking-[0.5em]">System status: Ready for input.
+            </p>
+            <div class="flex gap-4">
+                <span class="text-[10px] font-bold text-slate-500 uppercase">Support</span>
+                <span class="text-[10px] font-bold text-slate-500 uppercase">Privacy</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Custom Scripts -->
+    <script src="{{ url_for('static', filename='js/dropdown.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+</body>
+
+</html>

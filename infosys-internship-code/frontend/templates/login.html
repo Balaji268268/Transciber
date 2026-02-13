@@ -1,0 +1,151 @@
+﻿<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>TranscribeFlow - Join the Flow</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Outfit:wght@400;600;800;900&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+    <link href="/static/css/style.css" rel="stylesheet" />
+
+    <!-- Clerk.js -->
+    <script async crossorigin="anonymous"
+        data-clerk-publishable-key="pk_test_dXNlZnVsLWNoZWV0YWgtMzguY2xlcmsuYWNjb3VudHMuZGV2JA"
+        src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" type="text/javascript"></script>
+    <script>
+        window.addEventListener("load", async function () {
+            await Clerk.load();
+
+            // Check if already logged in
+            if (Clerk.user) {
+                window.location.href = "/home";
+                return;
+            }
+
+            // Mount Clerk component directly on the page
+            const clerkContainer = document.getElementById('clerk-mounted-signin');
+            if (clerkContainer) {
+                Clerk.mountSignIn(clerkContainer, {
+                    afterSignInUrl: "/home",
+                    afterSignUpUrl: "/home",
+                    appearance: {
+                        baseTheme: undefined, // Use default light theme
+                        layout: {
+                            socialButtonsVariant: 'iconButton',
+                        },
+                        variables: {
+                            colorPrimary: '#00f2ff',
+                            colorBackground: '#ffffff',
+                            colorText: '#020617',
+                            colorInputBackground: '#f8fafc',
+                            colorInputText: '#020617',
+                        },
+                        elements: {
+                            rootBox: 'w-full',
+                            card: 'bg-white shadow-none border-0',
+                            formButtonPrimary: 'bg-[#00f2ff] hover:bg-[#00d9e6] text-black font-bold',
+                            footerActionLink: 'text-[#00f2ff] hover:text-[#bc13fe]',
+                            socialButtonsBlockButton: 'border border-slate-200 hover:bg-slate-50',
+                            formFieldInput: 'bg-slate-50 border-slate-200 text-black',
+                            headerTitle: 'text-black',
+                            headerSubtitle: 'text-slate-600',
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</head>
+
+<body class="antialiased min-h-screen flex flex-col md:flex-row overflow-hidden">
+    <div
+        class="hidden md:flex md:w-1/2 mesh-gradient-auth p-10 flex-col justify-between items-start relative overflow-hidden">
+        <div class="z-10">
+            <div class="flex items-center gap-3 mb-8">
+                <div
+                    class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.4)]">
+                    <span class="material-symbols-outlined text-black font-black text-xl">graphic_eq</span>
+                </div>
+                <span class="text-2xl font-black tracking-tighter italic uppercase text-white">Transcribe<span
+                        class="text-[#00f2ff]">Flow</span></span>
+            </div>
+            <h1 class="text-6xl lg:text-7xl font-black text-white leading-tight tracking-tighter uppercase mb-4">
+                Welcome <br />Back to the <br />
+                <span class="text-gradient">Future</span> <br />
+                of Sound.
+            </h1>
+            <p class="text-lg text-white/70 max-w-md font-medium leading-relaxed">
+                Step into the high-velocity world of AI transcription. Your voice, decoded at the speed of thought.
+            </p>
+        </div>
+        <div class="z-10 w-full">
+            <div class="flex gap-4 items-center">
+                <div class="flex -space-x-4">
+                    <div
+                        class="w-12 h-12 rounded-full border-2 border-white/20 bg-slate-800 flex items-center justify-center overflow-hidden">
+                        <img alt="User" class="w-full h-full object-cover"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDETo44qbjcyxObgdiOBQjjrRjg_Xc9q8mx9UQeRg-nkGk4sNe-b1cX_9T5Vw2otiiq205DM8cUV3amr6Ajtfk04ZghpIp-oMa4CMWcBMAuSUJaimVdAqsUAilIF32dIykVUCxFqz1V4uRGe7iSmqvGgUz-vnZTKruGRohcrmjhE6baAWHGKm49ytgQS9xnlVGxLG6Xi5SPXcAcjHyVnRc7CLqsWEq60fKmL2T16yZ21Y3HoHF2nyUV4W1NASqCv1ahgj-l4dVR5g" />
+                    </div>
+                    <div
+                        class="w-12 h-12 rounded-full border-2 border-white/20 bg-slate-800 flex items-center justify-center overflow-hidden">
+                        <img alt="User" class="w-full h-full object-cover"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAogXjwrRWe-jjAyiPj7H8mCsyULNFWMddo7Tsc05jXxTEWuB5e5cICYXWP9gxITp59BLpP9vsthq6OzpLJVGruMq7_VqPfS84HhHYEZ4MAow2b3VAD0UDovLO0eLIRASui6KOV2UihtJv9w3R2t67PsOwfCw_euqG-KPNX8Vhh5CAadyOcdaRPeBDd6skS-LbkzZdG7b-rja2q_aTZtOkCh3ulLzkQsLNhqqN6e8sQtidERkHsXP3p079dX31pRlwjhsXgWOfhg" />
+                    </div>
+                    <div
+                        class="w-12 h-12 rounded-full border-2 border-white/20 bg-slate-800 flex items-center justify-center overflow-hidden">
+                        <img alt="User" class="w-full h-full object-cover"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJL7FDQ-YX122wjdl0k-8RzvX0519kxDHvjYTe1Xqnw_yWsc_NrAPe931Er9Ek7oSYFielvPL_9oqdVsBVrw4dJN2O9Hh62RFGL0LKdiiLLqJmJjWFyVACm54FrZdHB6FaqDySPfv8fYsNPU6niNQ18Y9X919WGIRqvSsGRKVi7y_dw1YAQ95wN2HWBxFv1V0_U8IUIu25fpeHbgjCPLIR-p_1holpo_WDKbw89CYY6JPP8Ei2527AcbqIdm68T7pqH7rokXhlkw" />
+                    </div>
+                </div>
+                <span class="text-sm font-black uppercase tracking-widest text-white/60">50K+ Creators Joined</span>
+            </div>
+        </div>
+        <div class="absolute -bottom-20 -right-20 w-96 h-96 bg-white/5 rounded-full blur-[100px]"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-20">
+            <svg class="w-full h-full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0 50 Q 25 40 50 50 T 100 50" fill="none" stroke="white" stroke-width="0.1"></path>
+                <path d="M0 60 Q 25 50 50 60 T 100 60" fill="none" stroke="white" stroke-width="0.1"></path>
+                <path d="M0 40 Q 25 30 50 40 T 100 40" fill="none" stroke="white" stroke-width="0.1"></path>
+            </svg>
+        </div>
+    </div>
+    <div class="w-full md:w-1/2 bg-[#020617] flex flex-col justify-center items-center p-8 md:p-16 relative">
+        <div class="max-w-md w-full">
+            <div class="mb-6 text-center">
+                <h2 class="text-5xl font-black text-white mb-3 uppercase tracking-tighter">Enter the Flow</h2>
+                <p class="text-slate-400 text-base font-medium">Sign in to access TranscribeFlow</p>
+            </div>
+
+            <!-- Clerk Component Container with visible background -->
+            <div class="rounded-3xl p-10 bg-white shadow-[0_0_40px_rgba(0,242,255,0.2)]">
+                <div id="clerk-mounted-signin"></div>
+            </div>
+            <p class="mt-8 text-center text-[10px] text-slate-600 font-bold uppercase tracking-widest leading-relaxed">
+                By entering, you agree to our
+                <a class="text-slate-400 hover:text-white underline" href="#">Terms</a> and
+                <a class="text-slate-400 hover:text-white underline" href="#">Privacy Shield</a>.
+            </p>
+        </div>
+        <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+            <span class="text-[9px] font-black text-slate-700 uppercase tracking-[0.4em]">Auth System Online</span>
+        </div>
+    </div>
+    <div class="fixed top-6 right-6 z-50 md:top-10 md:right-10">
+        <a class="group flex items-center gap-3 bg-white/5 hover:bg-white/10 backdrop-blur-md border border-white/10 px-4 py-2 rounded-full transition-all"
+            href="/">
+            <span class="material-symbols-outlined text-white text-sm">arrow_back</span>
+            <span class="text-[10px] font-black text-white uppercase tracking-widest">Back to Site</span>
+        </a>
+    </div>
+</body>
+
+</html>
